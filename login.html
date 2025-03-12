@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-image: url('./static/images/image10.png');
+            background-size: cover;
+        }
+        .login-container {
+            background: rgba(255, 255, 255, 0.8);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        input, button {
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2>Login</h2>
+        <form id="loginForm">
+            <input type="text" id="userId" placeholder="User ID" required>
+            <input type="password" id="password" placeholder="Password" required>
+            <button type="submit">Login</button>
+        </form>
+    </div>
+
+    <script type="module">
+        import { loginUser } from "./firebase-config.js";
+
+        console.log("Module loaded, loginUser:", typeof loginUser); // Verify import
+
+        const form = document.getElementById("loginForm");
+        if (form) {
+            console.log("Form found, attaching listener");
+            form.addEventListener("submit", async (event) => {
+                event.preventDefault();
+                console.log("Form submitted");
+
+                const userId = document.getElementById("userId").value.trim();
+                const password = document.getElementById("password").value;
+                console.log("Attempting login with:", userId, password);
+
+                const success = await loginUser(userId, password);
+                console.log("Login result:", success);
+
+                if (success) {
+                    setTimeout(() => {
+                        window.location.href = "dashboard.html";
+                    }, 100);
+                }
+            });
+        } else {
+            console.error("Form element not found");
+        }
+    </script>
+</body>
+</html>

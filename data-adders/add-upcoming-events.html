@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Add Upcoming Events (After April 2025)</title>
+</head>
+
+<body>
+    <h2>Add Upcoming Events (After April 2025) to Firebase</h2>
+    <button id="addEventsButton">Add Upcoming Events</button>
+
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, set, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBjTmyxKq...",
+            authDomain: "neocampus-e2679.firebaseapp.com",
+            databaseURL: "https://neocampus-e2679-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "neocampus-e2679",
+            storageBucket: "neocampus-e2679.appspot.com",
+            messagingSenderId: "661813565916",
+            appId: "1:661813565916:web:8e47a80cbff1495b751719",
+            measurementId: "G-Y4X6B53HQL"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // Updated list of upcoming events (All dates > 2025-04-01)
+        const upcomingEvents = [
+            // Artificial Intelligence
+            { name: "AI for Climate Change", date: "2025-05-10", domain: "Artificial Intelligence" },
+            { name: "Generative AI & Creativity", date: "2025-06-15", domain: "Artificial Intelligence" },
+            { name: "AI in Autonomous Vehicles", date: "2025-07-20", domain: "Artificial Intelligence" },
+
+            // Blockchain
+            { name: "Blockchain in Finance", date: "2025-05-22", domain: "Blockchain" },
+            { name: "Advanced Smart Contracts", date: "2025-06-18", domain: "Blockchain" },
+            { name: "Blockchain for Supply Chain Management", date: "2025-08-10", domain: "Blockchain" },
+
+            // Cybersecurity
+            { name: "Next-Gen Cyber Defense", date: "2025-04-15", domain: "Cybersecurity" },
+            { name: "Secure IoT Networks", date: "2025-05-20", domain: "Cybersecurity" },
+            { name: "Blockchain Security Conference", date: "2025-07-05", domain: "Cybersecurity" },
+
+            // Cloud Technology
+            { name: "Advanced Kubernetes Workshop", date: "2025-04-20", domain: "Cloud Technology" },
+            { name: "Cloud Security Summit", date: "2025-05-25", domain: "Cloud Technology" },
+            { name: "Serverless Computing Workshop", date: "2025-06-30", domain: "Cloud Technology" },
+
+            // Entrepreneurship
+            { name: "Startup Incubation Insights", date: "2025-05-18", domain: "Entrepreneurship" },
+            { name: "Women in Entrepreneurship Conference", date: "2025-06-22", domain: "Entrepreneurship" },
+            { name: "Digital Marketing for Startups", date: "2025-07-25", domain: "Entrepreneurship" },
+
+            // Data Science
+            { name: "AI & Big Data Fusion", date: "2025-04-10", domain: "Data Science" },
+            { name: "NLP in Practice", date: "2025-05-12", domain: "Data Science" },
+            { name: "Advanced Data Visualization", date: "2025-06-08", domain: "Data Science" },
+
+            // Software Development
+            { name: "Microservices & Scalability", date: "2025-04-05", domain: "Software Development" },
+            { name: "Next-Gen Web Development", date: "2025-06-20", domain: "Software Development" },
+            { name: "Software Architecture Summit", date: "2025-07-12", domain: "Software Development" },
+
+            // IoT & Smart Systems
+            { name: "IoT for Disaster Management", date: "2025-04-15", domain: "IoT & Smart Systems" },
+            { name: "Smart Home Innovations", date: "2025-05-28", domain: "IoT & Smart Systems" },
+            { name: "Autonomous IoT Systems", date: "2025-07-08", domain: "IoT & Smart Systems" }
+        ];
+
+        // Function to add upcoming events to Firebase
+        async function addUpcomingEvents() {
+            try {
+                const eventsRef = ref(db, "upcoming-events");
+                for (const event of upcomingEvents) {
+                    const newEventRef = push(eventsRef);
+                    await set(newEventRef, event);
+                    console.log(`✅ Event added: ${event.name}`);
+                }
+                alert("✅ Upcoming events (After April 2025) added successfully!");
+            } catch (error) {
+                console.error("❌ Error adding events:", error);
+                alert("❌ Failed to add events. Check the console for errors.");
+            }
+        }
+
+        // Attach event listener to the button
+        document.getElementById("addEventsButton").addEventListener("click", addUpcomingEvents);
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Add Extended Academic Data (with Event Domains for All Users)</title>
+</head>
+
+<body>
+    <h2>Add Extended Academic Data (with Event Domains) for All Users to Firebase</h2>
+    <button id="addDataButton">Add Academic Data</button>
+
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBjTmyxKq...",
+            authDomain: "neocampus-e2679.firebaseapp.com",
+            databaseURL: "https://neocampus-e2679-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "neocampus-e2679",
+            storageBucket: "neocampus-e2679.appspot.com",
+            messagingSenderId: "661813565916",
+            appId: "1:661813565916:web:8e47a80cbff1495b751719",
+            measurementId: "G-Y4X6B53HQL"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // Event domain mapping
+        const eventDomains = {
+            "Hackathon": "Software Development",
+            "AI Summit": "Artificial Intelligence",
+            "Data Science Workshop": "Data Science",
+            "Blockchain Basics": "Blockchain",
+            "Tech Talk": "General Technology",
+            "Startup Pitch": "Entrepreneurship",
+            "Cybersecurity Conference": "Cybersecurity",
+            "Innovation Summit": "Innovation & Research",
+            "AI Research": "AI & Machine Learning",
+            "Coding Marathon": "Programming",
+            "UI/UX Workshop": "Design",
+            "Smart Agriculture": "IoT & Smart Systems",
+            "Cloud Computing Workshop": "Cloud Technology",
+            "Data Analysis Bootcamp": "Data Analytics",
+            "Robotics Expo": "Robotics",
+            "Tech Expo": "Technology Showcase"
+        };
+
+        // Helper function to map event names to domains
+        function mapEventsToDomains(eventNames) {
+            return eventNames.map(name => ({
+                name,
+                domain: eventDomains[name] || "General"
+            }));
+        }
+
+        // Academic data for all users (with event domains)
+        const academicData = {
+            "Abinesh": {
+                cgpa: 7.8,
+                gpa: 8.2,
+                assignmentMarks: [75, 80, 78],
+                avgAssignmentMarks: 77.67,
+                attendance: 85,
+                extracurricular: 0,
+                classRank: 8,
+                totalStudents: 50,
+                certifications: {
+                    count: 2,
+                    names: ["Web Dev Basics", "C++ Advanced"]
+                },
+                achievements: 0,
+                credits: {
+                    achievementCredits: 80,
+                    participationCredits: 40
+                },
+                projects: {
+                    count: 1,
+                    names: ["IoT Smart Home"]
+                },
+                internships: {
+                    count: 1,
+                    roles: [{ role: "Web Developer", company: "WebWorks" }]
+                },
+                sports: {
+                    participated: 0,
+                    names: []
+                },
+                events: {
+                    count: 2,
+                    list: mapEventsToDomains(["Coding Marathon", "UI/UX Workshop"])
+                }
+            },
+            "Abee": {
+                cgpa: 9.2,
+                gpa: 9.5,
+                assignmentMarks: [95, 92, 94],
+                avgAssignmentMarks: 93.66,
+                attendance: 96,
+                extracurricular: 1,
+                classRank: 2,
+                totalStudents: 50,
+                certifications: {
+                    count: 4,
+                    names: ["Deep Learning", "Cybersecurity", "DSA Masterclass", "Data Analysis"]
+                },
+                achievements: 1,
+                credits: {
+                    achievementCredits: 130,
+                    participationCredits: 50
+                },
+                projects: {
+                    count: 3,
+                    names: ["AI Trading Bot", "IoT Monitoring System", "Blockchain Voting"]
+                },
+                internships: {
+                    count: 2,
+                    roles: [
+                        { role: "AI Developer", company: "AI Labs" },
+                        { role: "Data Engineer", company: "DataTech" }
+                    ]
+                },
+                sports: {
+                    participated: 1,
+                    names: ["Tennis", "Badminton"]
+                },
+                events: {
+                    count: 4,
+                    list: mapEventsToDomains(["AI Conference", "Data Summit", "Innovation Fair", "Startup Expo"])
+                }
+            },
+            "ABINESH": {
+                cgpa: 8.0,
+                gpa: 8.3,
+                assignmentMarks: [82, 85, 88],
+                avgAssignmentMarks: 85.00,
+                attendance: 89,
+                extracurricular: 0,
+                classRank: 6,
+                totalStudents: 50,
+                certifications: {
+                    count: 2,
+                    names: ["Data Structures", "Cloud Computing"]
+                },
+                achievements: 1,
+                credits: {
+                    achievementCredits: 90,
+                    participationCredits: 50
+                },
+                projects: {
+                    count: 2,
+                    names: ["IoT Weather Station", "Student Attendance System"]
+                },
+                internships: {
+                    count: 1,
+                    roles: [{ role: "Cloud Intern", company: "CloudCorp" }]
+                },
+                sports: {
+                    participated: 0,
+                    names: []
+                },
+                events: {
+                    count: 3,
+                    list: mapEventsToDomains(["Tech Expo", "AI Summit", "Research Conference"])
+                }
+            }
+        };
+
+        // Function to add academic data to Firebase
+        async function addAcademicData() {
+            try {
+                for (const userId in academicData) {
+                    const userRef = ref(db, `user-academics/${userId}`);
+                    await set(userRef, academicData[userId]);
+                    console.log(`✅ Data added for user: ${userId}`);
+                }
+                alert("✅ Extended academic data added successfully for all users!");
+            } catch (error) {
+                console.error("❌ Error adding data:", error);
+                alert("❌ Failed to add data. Check the console for errors.");
+            }
+        }
+
+        // Attach event listener to the button
+        document.getElementById("addDataButton").addEventListener("click", addAcademicData);
+    </script>
+
+</body>
+
+</html>

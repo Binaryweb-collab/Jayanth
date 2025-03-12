@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-image: url('./static/images/image10.png');
+            background-size: cover;
+        }
+
+        .dashboard-container {
+            background: rgba(255, 255, 255, 0.8);
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 600px;
+            margin: 0 auto;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .menu {
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            background-color: #008CBA;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #007B9A;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <h1>Welcome, <span id="userDisplay">Loading...</span></h1>
+        <div class="menu">
+            <button onclick="navigate('events')">Events</button>
+            <button onclick="navigate('portfolio')">Portfolio</button>
+            <button onclick="navigate('leave')">Leave Portal</button>
+            <button onclick="navigate('credits')">Credits</button>
+            <button onclick="navigate('others')">Others</button>
+            <button onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+
+<script>
+    // Navigate function: Passes userId to leave portal
+    function navigate(page) {
+        const userId = sessionStorage.getItem("userId");
+        const routes = {
+            "leave": `leave-portal.html`,
+            "events": "events.html",
+            "portfolio": "portfolio.html",
+            "credits": "credits.html",
+            "others": "others.html"
+        };
+
+        if (routes[page]) {
+            window.location.href = routes[page];
+        } else {
+            alert("Page not found.");
+        }
+    }
+</script>
+
+
+    <script>
+        // Navigate function: Redirects to corresponding pages
+        function navigate(page) {
+            const routes = {
+                "events": "events.html",
+                "portfolio": "portfolio.html",
+                "leave": "leave-portal.html", // Updated to navigate to the Leave Portal
+                "credits": "credits.html",
+                "others": "others.html"
+            };
+
+            if (routes[page]) {
+                window.location.href = routes[page];
+            } else {
+                alert("Page not found.");
+            }
+        }
+
+        // Check if user is logged in via sessionStorage
+        function checkSession() {
+            const userId = sessionStorage.getItem("userId");
+
+            if (!userId || userId === "null" || userId === "") {
+                alert("Please log in to access the dashboard.");
+                window.location.href = "login.html";
+                return;
+            }
+
+            // Display user ID on the dashboard
+            document.getElementById("userDisplay").innerText = userId;
+        }
+
+        // Clear session and log the user out
+        function logout() {
+            sessionStorage.clear();
+            window.location.href = "login.html";
+        }
+
+        // Run session check on page load
+        window.onload = checkSession;
+    </script>
+
+</body>
+
+</html>

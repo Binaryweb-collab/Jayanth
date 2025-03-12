@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Add Event Dates to User Academics</title>
+</head>
+
+<body>
+    <h2>Click to Add Event Dates to Users</h2>
+    <button id="updateButton">Update Event Dates</button>
+
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        // Firebase Configuration (Replace with your actual config)
+        const firebaseConfig = {
+            apiKey: "AIzaSyBjTmyxKq...",
+            authDomain: "neocampus-e2679.firebaseapp.com",
+            databaseURL: "https://neocampus-e2679-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "neocampus-e2679",
+            storageBucket: "neocampus-e2679.appspot.com",
+            messagingSenderId: "661813565916",
+            appId: "1:661813565916:web:8e47a80cbff1495b751719",
+            measurementId: "G-Y4X6B53HQL"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // Updated events with date for each user
+        const updatedUserEvents = {
+            "123": {
+                events: {
+                    count: 4,
+                    list: [
+                        { name: "AI Conference", domain: "General Technology", date: "2024-07-10" },
+                        { name: "Tech Expo", domain: "General Technology", date: "2024-08-12" },
+                        { name: "Startup Pitch", domain: "Entrepreneurship", date: "2024-09-05" },
+                        { name: "Innovation Summit", domain: "Innovation & Research", date: "2024-10-20" }
+                    ]
+                }
+            },
+            "ABINESH": {
+                events: {
+                    count: 3,
+                    list: [
+                        { name: "Cybersecurity Bootcamp", domain: "Cybersecurity", date: "2024-08-20" },
+                        { name: "AI Innovation Day", domain: "Artificial Intelligence", date: "2024-09-25" },
+                        { name: "Startup Challenge", domain: "Entrepreneurship", date: "2024-10-05" }
+                    ]
+                }
+            },
+            "Abee": {
+                events: {
+                    count: 2,
+                    list: [
+                        { name: "Data Science Forum", domain: "Data Science", date: "2024-06-30" },
+                        { name: "IoT Summit", domain: "Smart Systems", date: "2024-07-25" }
+                    ]
+                }
+            },
+            "Abinesh": {
+                events: {
+                    count: 3,
+                    list: [
+                        { name: "Cloud Computing Conference", domain: "Cloud Technology", date: "2024-07-15" },
+                        { name: "Blockchain Workshop", domain: "Blockchain", date: "2024-08-22" },
+                        { name: "Innovation Hackathon", domain: "Innovation & Research", date: "2024-09-30" }
+                    ]
+                }
+            },
+            "jayanth": {
+                events: {
+                    count: 3,
+                    list: [
+                        { name: "AI in Healthcare", domain: "Artificial Intelligence", date: "2024-07-12" },
+                        { name: "Tech Leadership Summit", domain: "Leadership", date: "2024-08-10" },
+                        { name: "Smart City Forum", domain: "Smart Systems", date: "2024-09-05" }
+                    ]
+                }
+            }
+        };
+
+        // Function to update user events
+        async function updateEventDates() {
+            try {
+                for (const [userId, data] of Object.entries(updatedUserEvents)) {
+                    const userRef = ref(db, `user-academics/${userId}/events`);
+                    await update(userRef, data.events);
+                    console.log(`✅ Updated event dates for: ${userId}`);
+                }
+                alert("✅ Event dates updated successfully for all users!");
+            } catch (error) {
+                console.error("❌ Error updating event dates:", error);
+                alert("❌ Failed to update event dates. Check the console for details.");
+            }
+        }
+
+        // Add event listener to the update button
+        document.getElementById("updateButton").addEventListener("click", updateEventDates);
+
+    </script>
+
+</body>
+
+</html>

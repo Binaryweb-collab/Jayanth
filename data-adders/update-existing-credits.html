@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>🏅 Update User Credit Badges Portal</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f9f9f9;
+            text-align: center;
+            padding: 20px;
+        }
+
+        h2 {
+            color: #333;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin-top: 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #status {
+            margin-top: 20px;
+            white-space: pre-wrap;
+            text-align: left;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2>🏅 Credit Badge Management Portal</h2>
+    <button id="updateButton">Update Badges</button>
+
+    <div id="status">Status: Waiting for action...</div>
+
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, get, update, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBjTmyxKq...",
+            authDomain: "neocampus-e2679.firebaseapp.com",
+            databaseURL: "https://neocampus-e2679-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "neocampus-e2679",
+            storageBucket: "neocampus-e2679.appspot.com",
+            messagingSenderId: "661813565916",
+            appId: "1:661813565916:web:8e47a80cbff1495b751719",
+            measurementId: "G-Y4X6B53HQL"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // Badge criteria
+        function getBadge(credits) {
+            if (credits >= 80) return "Gold";
+            if (credits >= 50) return "Silver";
+            return "Bronze";
+        }
+
+        // Function to update the status message
+        function updateStatus(message) {
+            const statusElement = document.getElementById("status");
+            statusElement.innerText += `\n${message}`;
+        }
+
+        // Function to update badges for all users
+        async function updateAllUserBadges() {
+            try {
+                // Step 1: Get all users from "user-academics"
+                const usersRef = ref(db, "user-academics");
+                const snapshot = await get(usersRef);
+
+                if (!snapshot.exists()) {
+                    alert("❌ No user data found.");
+                    console.warn("❌ No user data found.");
+                    return;
+                }
+
+                const usersData = snapshot.val();
+
+                // Step 2: Iterate through all users
+                for (const userId in usersData) {
+                    const user = usersData[userId];
+                    const credits = user.credits || {};
+
+                    // Step 3: Delete the existing badge
+                    const badgePath = ref(db, `user-academics/${userId}/credits/badge`);
+                    await remove(badgePath);
+                    updateStatus(`🗑️ Deleted existing badges for user: ${userId}`);
+
+                    // Step 4: Calculate and assign new badges
+                    const achievementBadge = getBadge(credits.achievementCredits || 0);
+                    const participationBadge = getBadge(credits.participationCredits || 0);
+
+                    // Update new badges
+                    const newBadges = {
+                        achievementBadge: achievementBadge,
+                        participationBadge: participationBadge
+                    };
+
+                    const badgeUpdatePath = ref(db, `user-academics/${userId}/credits/badge`);
+                    await update(badgeUpdatePath, newBadges);
+                    updateStatus(`✅ Updated badges for user ${userId}: ${JSON.stringify(newBadges)}`);
+                }
+
+                alert("✅ All user badges updated successfully!");
+
+            } catch (error) {
+                console.error("❌ Error updating badges:", error);
+                alert("❌ Failed to update badges. Check the console for more details.");
+            }
+        }
+
+        // Attach event listener to the update button
+        document.getElementById("updateButton").addEventListener("click", updateAllUserBadges);
+
+    </script>
+
+</body>
+
+</html>

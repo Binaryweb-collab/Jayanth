@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leave & On-Duty Portal</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            background-image: url('./static/images/image10.png');
+
+        }
+
+        /* Left Side: Leave Application Form */
+        .left-container {
+            width: 75%;
+            padding: 5px;
+            background: #ffffff00;
+            border-right: 2px solid #e0e0e0;
+            margin-left: 300px;
+        }
+
+        .form-container {
+            max-width: 600px;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-container h2 {
+            margin-bottom: 30px;
+            color: #333;
+            font-size: 24px;
+            text-align: center;
+        }
+
+        label {
+            font-weight: bold;
+            color: #555;
+        }
+
+        select,
+        input,
+        textarea,
+        button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        /* Right Side: Live Status Panel */
+        .right-container {
+            width: 25%;
+            padding: 50px;
+            background: #333;
+            color: white;
+            text-align: center;
+            margin-top: 20px;
+            border-radius: 25px
+            ;
+        }
+
+        .status-box {
+            padding: 20px;
+            margin-top: 20px;
+            background: #444;
+            border-radius: 10px;
+        }
+
+        .status-box h3 {
+            margin: 10px 0;
+            font-size: 20px;
+        }
+
+        .date {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Left Side: Leave Application Form -->
+    <div class="left-container">
+        <div class="form-container">
+            <h2>Apply for Leave / On-Duty</h2>
+            <label for="userId">User ID:</label>
+            <input type="text" id="userId" placeholder="Enter your User ID" readonly>
+A
+            <label for="leaveType">Leave Type:</label>
+            <select id="leaveType">
+                <option value="Sick Leave">Sick Leave</option>
+                <option value="Casual Leave">Casual Leave</option>
+                <option value="On-Duty">On-Duty</option>
+            </select>
+
+            <label for="leaveDate">Leave Date:</label>
+            <input type="date" id="leaveDate" required>
+
+            <label for="reason">Reason:</label>
+            <textarea id="reason" placeholder="Enter the reason..." rows="4" required></textarea>
+
+            <button id="submitLeave">Submit Application</button>
+        </div>
+    </div>
+
+    <!-- Right Side: Live Status Panel -->
+    <div class="right-container">
+        <h2>Live Status</h2>
+        <p class="date" id="todayDate"></p>
+
+        <div class="status-box">
+            <h3>Remaining Leaves</h3>
+            <p id="remainingLeaves">Loading...</p>
+        </div>
+
+        <div class="status-box">
+            <h3>Remaining On-Duty</h3>
+            <p id="remainingOD">Loading...</p>
+        </div>
+    </div>
+
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, set, push, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        // Firebase Configuration
+        const firebaseConfig = {
+                   apiKey: "AIzaSyBjTmyxKq...",
+            authDomain: "neocampus-e2679.firebaseapp.com",
+            databaseURL: "https://neocampus-e2679-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "neocampus-e2679",
+            storageBucket: "neocampus-e2679.appspot.com",
+            messagingSenderId: "661813565916",
+            appId: "1:661813565916:web:8e47a80cbff1495b751719",
+            measurementId: "G-Y4X6B53HQL"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // Display today's date
+        document.getElementById("todayDate").innerText = new Date().toDateString();
+
+        // Get userId from sessionStorage and auto-fill
+        const userId = sessionStorage.getItem("userId");
+        if (userId) {
+            document.getElementById("userId").value = userId;
+            fetchLeaveBalance(userId);
+        } else {
+            alert("User  not found! Redirecting to dashboard...");
+            window.location.href = "dashboard.html";
+        }
+
+        // Function to fetch leave balance
+        async function fetchLeaveBalance(userId) {
+            const balanceRef = ref(db, `leave-summary/${userId}`);
+            const snapshot = await get(balanceRef);
+
+            if (snapshot.exists()) {
+                const data = snapshot.val();
+                document.getElementById("remainingLeaves").innerText = data.remainingLeaves || 0;
+                document.getElementById("remainingOD").innerText = data.remainingOD || 0;
+            } else {
+                document.getElementById("remainingLeaves").innerText = "N/A";
+                document.getElementById("remainingOD").innerText = "N/A";
+            }
+        }
+
+        // Function to submit leave request
+        async function submitLeaveRequest() {
+            const leaveType = document.getElementById("leaveType").value;
+            const leaveDate = document.getElementById("leaveDate").value;
+            const reason = document.getElementById("reason").value.trim();
+
+            if (!leaveDate || !reason) {
+                alert("❌ Please fill in all fields!");
+                return;
+            }
+
+            try {
+                const leaveRef = ref(db, `leave-requests/${userId}`);
+                await set(push(leaveRef), {
+                    date: leaveDate,
+                    type: leaveType,
+                    reason,
+                    status: "Pending"
+                });
+
+                alert("✅ Leave request submitted!");
+                fetchLeaveBalance(userId); // Refresh balance
+            } catch (error) {
+                console.error("❌ Error submitting leave:", error);
+                alert("❌ Failed to submit leave.");
+            }
+        }
+
+        document.getElementById("submitLeave").addEventListener("click", submitLeaveRequest);
+
+    </script>
+    <style>    
+    body {
+        font-family: 'Helvetica Neue', Arial, sans-serif;
+        background-image: url('./static/images/image10.png');
+    }
+</style>
+    
+
+</body>
+
+</html>

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>User Event Portal</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        h2 {
+            color: #333;
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .event-box {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .event-box p {
+            margin: 5px 0;
+        }
+
+        .placeholder {
+            background: #e9e9e9;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>📅 Event Portal</h2>
+
+    <!-- Section 1: Past Events -->
+    <div class="section">
+        <h3>✅ Past Events You Attended</h3>
+        <div id="pastEvents">Loading...</div>
+    </div>
+
+    <!-- Section 2: AI-Powered Recommendations (Placeholder for AI Model) -->
+    <div class="section">
+        <h3>🤖 AI Suggested Events (Coming Soon)</h3>
+        <div id="aiRecommendations" class="placeholder">
+            AI suggestions will be displayed here once integrated.
+        </div>
+    </div>
+
+    <!-- Section 3: Upcoming Events (Based on AI Suggestion) -->
+    <div class="section">
+        <h3>🚀 Upcoming Events Based on AI Suggestions</h3>
+        <div id="upcomingEvents">Loading...</div>
+    </div>
+
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        // Firebase Configuration (Replace with your actual config)
+        const firebaseConfig = {
+            apiKey: "AIzaSyBjTmyxKq...",
+            authDomain: "neocampus-e2679.firebaseapp.com",
+            databaseURL: "https://neocampus-e2679-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "neocampus-e2679",
+            storageBucket: "neocampus-e2679.appspot.com",
+            messagingSenderId: "661813565916",
+            appId: "1:661813565916:web:8e47a80cbff1495b751719",
+            measurementId: "G-Y4X6B53HQL"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // Retrieve User ID from Session Storage
+        const userId = sessionStorage.getItem("userId");
+
+        if (!userId) {
+            alert("User not logged in. Redirecting to login page.");
+            window.location.href = "login.html";
+        }
+
+        console.log(`🔍 Logged in as: ${userId}`);
+
+        // Fetch past events attended by the user
+        async function loadPastEvents() {
+            const userRef = ref(db, `user-academics/${userId}/events/list`);
+            const snapshot = await get(userRef);
+            const container = document.getElementById("pastEvents");
+
+            if (snapshot.exists()) {
+                const events = snapshot.val();
+                container.innerHTML = "";
+
+                events.forEach(event => {
+                    container.innerHTML += `
+                        <div class="event-box">
+                            <strong>${event.name}</strong><br>
+                            <p>Domain: ${event.domain}</p>
+                            <p>Date: ${event.date}</p>
+                        </div>`;
+                });
+            } else {
+                container.innerText = "No past events found.";
+            }
+        }
+
+        // Placeholder for AI event suggestions (Dynamic integration later)
+        function loadAISuggestions() {
+            const aiContainer = document.getElementById("aiRecommendations");
+
+            // Static AI suggestions for now - replace with AI model output later
+            const aiSuggestedEvents = [
+                { name: "Advanced AI Workshop", domain: "Artificial Intelligence", date: "2025-07-15" },
+                { name: "IoT in Healthcare", domain: "IoT & Smart Systems", date: "2025-08-12" }
+            ];
+
+            aiContainer.innerHTML = "";
+            aiSuggestedEvents.forEach(event => {
+                aiContainer.innerHTML += `
+                    <div class="event-box">
+                        <strong>${event.name}</strong><br>
+                        <p>Domain: ${event.domain}</p>
+                        <p>Date: ${event.date}</p>
+                    </div>`;
+            });
+        }
+
+        // Fetch upcoming events from the database
+        async function loadUpcomingEvents() {
+            const eventsRef = ref(db, "upcoming-events");
+            const snapshot = await get(eventsRef);
+            const container = document.getElementById("upcomingEvents");
+
+            if (snapshot.exists()) {
+                const events = snapshot.val();
+                container.innerHTML = "";
+
+                Object.values(events).forEach(event => {
+                    container.innerHTML += `
+                        <div class="event-box">
+                            <strong>${event.name}</strong><br>
+                            <p>Domain: ${event.domain}</p>
+                            <p>Date: ${event.date}</p>
+                        </div>`;
+                });
+            } else {
+                container.innerText = "No upcoming events available.";
+            }
+        }
+
+        // Load all sections when the page is loaded
+        loadPastEvents();
+        loadAISuggestions();
+        loadUpcomingEvents();
+
+    </script>
+
+</body>
+
+</html>

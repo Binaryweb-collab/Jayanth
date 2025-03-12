@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>🏅 Credit Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f9f9f9;
+            text-align: center;
+            padding: 20px;
+        }
+
+        h2 {
+            color: #333;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+        }
+
+        .credit-box {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .credit-section {
+            width: 48%;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .badge {
+            font-size: 24px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+        }
+
+        .badge img {
+            width: 80px;
+            height: 80px;
+            margin-right: 15px;
+        }
+
+        .next-badge {
+            margin-top: 10px;
+            font-size: 16px;
+            color: #555;
+        }
+
+        .quote, .tip {
+            margin-top: 20px;
+            font-style: italic;
+        }
+
+        #logout {
+            margin-top: 30px;
+            padding: 10px 20px;
+            background-color: #FF6347;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        #logout:hover {
+            background-color: #D63C26;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2>🏅 Credit Dashboard</h2>
+
+    <div class="container">
+        <div class="credit-box">
+
+            <!-- Achievement Credits -->
+            <div class="credit-section">
+                <h3>🎖️ Achievement Credits</h3>
+                <p id="achievementCredits">Loading...</p>
+                <div class="badge" id="achievementBadge">
+                    <img id="achievementBadgeImage" src="" alt="Achievement Badge">
+                    <span>Loading...</span>
+                </div>
+                <p class="next-badge" id="nextAchievement">Next Badge: Loading...</p>
+            </div>
+
+            <!-- Participation Credits -->
+            <div class="credit-section">
+                <h3>🎉 Participation Credits</h3>
+                <p id="participationCredits">Loading...</p>
+                <div class="badge" id="participationBadge">
+                    <img id="participationBadgeImage" src="" alt="Participation Badge">
+                    <span>Loading...</span>
+                </div>
+                <p class="next-badge" id="nextParticipation">Next Badge: Loading...</p>
+            </div>
+        </div>
+
+        <!-- Quotes and Tips -->
+        <p class="quote" id="quote">Fetching quote...</p>
+        <p class="tip" id="tip">Fetching tips...</p>
+
+
+    </div>
+
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBjTmyxKq...",
+            authDomain: "neocampus-e2679.firebaseapp.com",
+            databaseURL: "https://neocampus-e2679-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "neocampus-e2679",
+            storageBucket: "neocampus-e2679.appspot.com",
+            messagingSenderId: "661813565916",
+            appId: "1:661813565916:web:8e47a80cbff1495b751719",
+            measurementId: "G-Y4X6B53HQL"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // Badge criteria
+        function getBadge(credits) {
+            if (credits >= 80) return "🥇 Gold";
+            if (credits >= 50) return "🥈 Silver";
+            return "🥉 Bronze";
+        }
+
+        function getBadgeImage(credits) {
+            if (credits >= 80) return "./static/images/gold.png";
+            if (credits >= 50) return "./static/images/silver.png";
+            return "./static/images/bronze.png";
+        }
+
+        function getNextBadge(credits) {
+            if (credits < 50) return `🥈 Silver (${50 - credits} credits left)`;
+            if (credits < 80) return `🥇 Gold (${80 - credits} credits left)`;
+            return "🏆 Max Level Achieved!";
+        }
+
+        // Motivational quotes and tips
+        const quotes = [
+            "“Success is the sum of small efforts, repeated day in and day out.”",
+            "“Hard work beats talent when talent doesn't work hard.”",
+            "“The only limit to our realization of tomorrow is our doubts of today.”",
+            "“The best way to predict your future is to create it.”"
+        ];
+
+        const tips = [
+            "📚 Participate in more workshops to boost your participation credits.",
+            "🏆 Aim to publish research papers or win competitions to gain achievement credits.",
+            "🤝 Collaborate with peers on innovative projects for additional credits.",
+            "🎤 Engage in public speaking events to earn both credit categories."
+        ];
+
+        // Function to fetch and display credit data
+        async function loadCreditData() {
+            try {
+                const userId = sessionStorage.getItem("userId");
+                if (!userId) {
+                    alert("Please log in to access the credit dashboard.");
+                    window.location.href = "login.html";
+                    return;
+                }
+
+                const userRef = ref(db, `user-academics/${userId}`);
+                const snapshot = await get(userRef);
+
+                if (!snapshot.exists()) {
+                    alert("User data not found.");
+                    return;
+                }
+
+                const userData = snapshot.val();
+                const { achievementCredits = 0, participationCredits = 0 } = userData.credits || {};
+
+                // Display Achievement Credits and Badge
+                document.getElementById("achievementCredits").innerText = `${achievementCredits} credits`;
+                document.getElementById("achievementBadgeImage").src = getBadgeImage(achievementCredits);
+                document.getElementById("achievementBadge").querySelector("span").innerText = getBadge(achievementCredits);
+                document.getElementById("nextAchievement").innerText = getNextBadge(achievementCredits);
+
+                // Display Participation Credits and Badge
+                document.getElementById("participationCredits").innerText = `${participationCredits} credits`;
+                document.getElementById("participationBadgeImage").src = getBadgeImage(participationCredits);
+                document.getElementById("participationBadge").querySelector("span").innerText = getBadge(participationCredits);
+                document.getElementById("nextParticipation").innerText = getNextBadge(participationCredits);
+
+                // Display Random Quote & Tip
+                document.getElementById("quote").innerText = quotes[Math.floor(Math.random() * quotes.length)];
+                document.getElementById("tip").innerText = tips[Math.floor(Math.random() * tips.length)];
+
+            } catch (error) {
+                console.error("Error loading credit data:", error);
+                alert("Failed to load credit data. Please try again.");
+            }
+        }
+
+      
+
+        loadCreditData();
+
+    </script>
+
+</body>
+
+</html>

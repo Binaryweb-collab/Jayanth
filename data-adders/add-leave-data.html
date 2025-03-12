@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Leave Summary</title>
+</head>
+
+<body>
+    <h2>Click the button to update remaining leaves and OD</h2>
+    <button id="updateLeaveButton">Update Leave Summary</button>
+
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        // Firebase Configuration (Ensure this is correct from your Firebase Console)
+        const firebaseConfig = {
+            apiKey: "AIzaSyBjTmyxKq...",
+            authDomain: "neocampus-e2679.firebaseapp.com",
+            databaseURL: "https://neocampus-e2679-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "neocampus-e2679",
+            storageBucket: "neocampus-e2679.appspot.com",
+            messagingSenderId: "661813565916",
+            appId: "1:661813565916:web:8e47a80cbff1495b751719",
+            measurementId: "G-Y4X6B53HQL"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // Maximum leaves and OD allowed
+        const MAX_LEAVES = 10; // Total Sick + Casual
+        const MAX_OD = 5; // Maximum On-Duty (OD) allowed
+
+        // Function to update leave summary
+        async function updateLeaveSummary() {
+            try {
+                // Reference to all leave requests
+                const leaveRequestsRef = ref(db, 'leave-requests');
+                const snapshot = await get(leaveRequestsRef);
+
+                if (!snapshot.exists()) {
+                    alert("❌ No leave requests found.");
+                    return;
+                }
+
+                const leaveRequests = snapshot.val();
+
+                // Process each user
+                for (const userId in leaveRequests) {
+                    let totalLeavesTaken = 0;
+                    let totalODTaken = 0;
+
+                    // Loop through user's leave requests
+                    for (const leaveId in leaveRequests[userId]) {
+                        const leave = leaveRequests[userId][leaveId];
+
+                        // Count only approved leaves
+                        if (leave.status === "Approved") {
+                            if (leave.type === "Sick Leave" || leave.type === "Casual Leave") {
+                                totalLeavesTaken++;
+                            } else if (leave.type === "On-Duty") {
+                                totalODTaken++;
+                            }
+                        }
+                    }
+
+                    // Calculate remaining leaves and OD
+                    const remainingLeaves = Math.max(0, MAX_LEAVES - totalLeavesTaken);
+                    const remainingOD = Math.max(0, MAX_OD - totalODTaken);
+
+                    // Reference to the user's leave-summary node
+                    const userSummaryRef = ref(db, `leave-summary/${userId}`);
+
+                    // Prepare the summary for this user
+                    const summaryData = {
+                        totalLeavesTaken,
+                        totalODTaken,
+                        remainingLeaves,
+                        remainingOD,
+                    };
+
+                    // Update the summary for the user
+                    await set(userSummaryRef, summaryData);
+                    console.log(`✅ Updated summary for ${userId}:`, summaryData);
+                }
+
+                alert("✅ Leave summary updated successfully for all users!");
+            } catch (error) {
+                console.error("❌ Error updating leave summary:", error);
+                alert("❌ Failed to update leave summary. Check the console for details.");
+            }
+        }
+
+        // Attach event listener to the button
+        document.addEventListener("DOMContentLoaded", () => {
+            document.getElementById("updateLeaveButton").addEventListener("click", updateLeaveSummary);
+        });
+
+    </script>
+
+</body>
+
+</html>

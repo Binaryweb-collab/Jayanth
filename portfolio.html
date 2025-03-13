@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>📚 Student Portfolio</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f9f9f9;
+            padding: 20px;
+            margin: 0;
+            line-height: 1.6;
+            text-align: center;
+        }
+
+        h2 {
+            color: #2c3e50;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            padding: 20px;
+            background: white;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            transition: 0.3s;
+        }
+
+        .profile-section img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .section {
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .card {
+            background: #fff;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .badge {
+            padding: 5px 10px;
+            border-radius: 5px;
+            color: white;
+        }
+
+        .gold { background: gold; }
+        .silver { background: silver; }
+        .bronze { background: #cd7f32; }
+
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            margin-top: 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #45a049;
+        }
+
+        .review-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f0f0f0;
+            border-radius: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2>📚 Student Portfolio</h2>
+
+    <div class="container">
+
+        <!-- Profile Section -->
+        <div class="profile-section">
+            <img id="profilePic" src="./static/images/default-profile.png" alt="Profile Image">
+            <h3 id="studentName">Loading...</h3>
+            <p id="userId">User ID: Loading...</p>
+            <p id="nickname">🎖️ Nickname: Loading...</p>
+        </div>
+
+        <!-- Academics Section -->
+        <div class="section">
+            <h3>📊 Academic Performance</h3>
+            <div class="card" id="academicInfo">Loading...</div>
+        </div>
+
+        <!-- Certifications & Achievements -->
+        <div class="section">
+            <h3>🏆 Certifications & Achievements</h3>
+            <div class="card" id="certifications">Loading...</div>
+        </div>
+
+        <!-- Projects -->
+        <div class="section">
+            <h3>📁 Projects</h3>
+            <div class="card" id="projects">Loading...</div>
+        </div>
+
+        <!-- Internships -->
+        <div class="section">
+            <h3>💼 Internships</h3>
+            <div class="card" id="internships">Loading...</div>
+        </div>
+
+        <!-- Events -->
+        <div class="section">
+            <h3>🎤 Events Attended</h3>
+            <div class="card" id="events">Loading...</div>
+        </div>
+
+        <!-- Credits & Badges -->
+        <div class="section">
+            <h3>🏅 Credits & Badges</h3>
+            <div class="card" id="credits">Loading...</div>
+        </div>
+
+        <!-- Reviews Section -->
+        <div class="review-section">
+            <h3>📣 Reviews (By Teachers)</h3>
+            <div id="reviews">No reviews yet. (Coming soon!)</div>
+        </div>
+
+        <button onclick="logout()">Logout</button>
+
+    </div>
+
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        // Firebase Configuration
+        const firebaseConfig = {
+                   apiKey: "AIzaSyBjTmyxKq...",
+            authDomain: "neocampus-e2679.firebaseapp.com",
+            databaseURL: "https://neocampus-e2679-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "neocampus-e2679",
+            storageBucket: "neocampus-e2679.appspot.com",
+            messagingSenderId: "661813565916",
+            appId: "1:661813565916:web:8e47a80cbff1495b751719",
+            measurementId: "G-Y4X6B53HQL"
+        };
+
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // Helper to get badge level
+        function getBadge(credits) {
+            if (credits >= 120) return "Gold";
+            if (credits >= 80) return "Silver";
+            return "Bronze";
+        }
+
+        // Generate Nickname
+        function generateNickname(data) {
+            if (data.cgpa >= 9.5) return "✨ AI Mastermind";
+            if (data.credits?.achievementCredits > 120) return "🏆 Innovation Champion";
+            if (data.attendance >= 95) return "📚 The Perfect Attender";
+            return "💡 Rising Star";
+        }
+
+        // Fetch and display student portfolio
+        async function loadPortfolio() {
+            const userId = sessionStorage.getItem("userId");
+            if (!userId) {
+                alert("Session expired. Please log in.");
+                window.location.href = "login.html";
+                return;
+            }
+
+            try {
+                const userRef = ref(db, `user-academics/${userId}`);
+                const snapshot = await get(userRef);
+
+                if (!snapshot.exists()) {
+                    alert("User data not found.");
+                    return;
+                }
+
+                const userData = snapshot.val();
+
+                document.getElementById("studentName").textContent = userId;
+                document.getElementById("userId").textContent = `User ID: ${userId}`;
+                document.getElementById("nickname").textContent = `🎖️ Nickname: ${generateNickname(userData)}`;
+
+                // Academic Info
+                document.getElementById("academicInfo").innerHTML = `
+                    CGPA: ${userData.cgpa || "N/A"} <br>
+                    GPA: ${userData.gpa || "N/A"} <br>
+                    Attendance: ${userData.attendance || "N/A"}% <br>
+                    Rank: ${userData.classRank || "N/A"} / ${userData.totalStudents || "N/A"}
+                `;
+
+                // Certifications
+                const certs = userData.certifications?.names || [];
+                document.getElementById("certifications").textContent = certs.join(", ") || "No certifications";
+
+                // Projects
+                const projects = userData.projects?.names || [];
+                document.getElementById("projects").textContent = projects.join(", ") || "No projects";
+
+                // Internships
+                const internships = userData.internships?.roles || [];
+                document.getElementById("internships").textContent = internships.length
+                    ? internships.map((i) => `${i.role} at ${i.company}`).join("<br>")
+                    : "No internships";
+
+                // Events
+                const events = userData.events?.list || [];
+                document.getElementById("events").textContent = events.length
+                    ? events.map((e) => `${e.name} (${e.domain})`).join("<br>")
+                    : "No events";
+
+            } catch (error) {
+                console.error("Error loading portfolio:", error);
+                alert("Failed to load data.");
+            }
+        }
+
+        function logout() {
+            sessionStorage.clear();
+            window.location.href = "login.html";
+        }
+
+        window.onload = loadPortfolio;
+    </script>
+
+</body>
+
+</html>
